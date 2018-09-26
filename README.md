@@ -22,3 +22,11 @@ The configuration file settings can be overridden by setting the environment
 variables `HORDE_ADDRESS` and `HORDE_TOKEN`. If you only use environment variables
 the configuration file can be ignored.  Finally, there is a Client constructor that
 accepts the address and token directly.
+
+# Development
+
+Development is done using [Pipenv](https://docs.pipenv.org/).  Run `pipenv install --dev` to install all dependencies.
+
+## Testing
+
+Tests are written using [pytest](https://pytest.org/).  Run `pipenv run pytest` to run all the tests.
