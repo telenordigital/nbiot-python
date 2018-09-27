@@ -1,3 +1,6 @@
+import asyncio
+import pytest
+
 from horde import *
 
 def test_config():
@@ -69,5 +72,17 @@ def test_devices():
 	client.delete_device(collection.id, device.id)
 	devices = client.get_devices(collection.id)
 	assert len(devices) == 0
+
+	client.delete_collection(collection.id)
+
+@pytest.mark.asyncio
+async def test_output():
+	client = Client()
+	collection = client.create_collection(Collection())
+
+	task = asyncio.create_task(client.collection_output(collection.id, lambda msg: print(msg)))
+	await asyncio.sleep(4)
+	task.cancel()
+	await task
 
 	client.delete_collection(collection.id)

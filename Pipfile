@@ -5,9 +5,11 @@ name = "pypi"
 
 [dev-packages]
 pytest = "*"
+pytest-asyncio = "*"
 
 [packages]
 requests = "*"
+websockets = "*"
 
 [requires]
-python_version = "2.7"
+python_version = "3.7"

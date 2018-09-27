@@ -1,5 +1,11 @@
+import asyncio
+import base64
+import json
 import os
+
 import requests
+from urllib.parse import urlparse
+import websockets
 
 class Client:
 	"""Construct a new client.  If addr or teken is not provided, the default
@@ -13,7 +19,52 @@ class Client:
 		self.addr = addr
 		self.token = token
 
-	def request(self, method, path, x=None):
+	def get_teams(self):
+		x = self._request('GET', '/teams')
+		return [Team(json=t) for t in x['teams']]
+	def get_team(self, id):
+		x = self._request('GET', '/teams/'+id)
+		return Team(json=x)
+	def create_team(self, team):
+		x = self._request('POST', '/teams', team)
+		return Team(json=x)
+	def update_team(self, team):
+		x = self._request('PATCH', '/teams/'+team.id, team)
+		return Team(json=x)
+	def delete_team(self, id):
+		self._request('DELETE', '/teams/'+id)
+
+	def get_collections(self):
+		x = self._request('GET', '/collections')
+		return [Collection(json=c) for c in x['collections']]
+	def get_collection(self, id):
+		x = self._request('GET', '/collections/'+id)
+		return Collection(json=x)
+	def create_collection(self, collection):
+		x = self._request('POST', '/collections', collection)
+		return Collection(json=x)
+	def update_collection(self, collection):
+		x = self._request('PATCH', '/collections/'+collection.id, collection)
+		return Collection(json=x)
+	def delete_collection(self, id):
+		self._request('DELETE', '/collections/'+id)
+
+	def get_devices(self, collection_id):
+		x = self._request('GET', '/collections/{0}/devices'.format(collection_id))
+		return [Device(json=d) for d in x['devices']]
+	def get_device(self, collection_id, device_id):
+		x = self._request('GET', '/collections/{0}/devices/{1}'.format(collection_id, device_id))
+		return Device(json=x)
+	def create_device(self, collection_id, device):
+		x = self._request('POST', '/collections/{0}/devices'.format(collection_id), device)
+		return Device(json=x)
+	def update_device(self, collection_id, device):
+		x = self._request('PATCH', '/collections/{0}/devices/{1}'.format(collection_id, device.id), device)
+		return Device(json=x)
+	def delete_device(self, collection_id, device_id):
+		self._request('DELETE', '/collections/{0}/devices/{1}'.format(collection_id, device_id))
+
+	def _request(self, method, path, x=None):
 		json = x and x.json()
 		headers = {'X-API-Token': self.token, 'Content-Type': 'application/json'}
 		resp = requests.request(method, self.addr + path, json=json, headers=headers)
@@ -22,50 +73,37 @@ class Client:
 		if method is not 'DELETE':
 			return resp.json()
 
-	def get_teams(self):
-		x = self.request('GET', '/teams')
-		return map(lambda t: Team(json=t), x['teams'])
-	def get_team(self, id):
-		x = self.request('GET', '/teams/'+id)
-		return Team(json=x)
-	def create_team(self, team):
-		x = self.request('POST', '/teams', team)
-		return Team(json=x)
-	def update_team(self, team):
-		x = self.request('PATCH', '/teams/'+team.id, team)
-		return Team(json=x)
-	def delete_team(self, id):
-		self.request('DELETE', '/teams/'+id)
+	def collection_output(self, id, handler):
+		return self._output('/collections/'+id, handler)
+	def device_output(self, collection_id, device_id, handler):
+		return self._output('/collections/{0}/devices/{1}'.format(collection_id, device_id), handler)
 
-	def get_collections(self):
-		x = self.request('GET', '/collections')
-		return map(lambda c: Collection(json=c), x['collections'])
-	def get_collection(self, id):
-		x = self.request('GET', '/collections/'+id)
-		return Collection(json=x)
-	def create_collection(self, collection):
-		x = self.request('POST', '/collections', collection)
-		return Collection(json=x)
-	def update_collection(self, collection):
-		x = self.request('PATCH', '/collections/'+collection.id, collection)
-		return Collection(json=x)
-	def delete_collection(self, id):
-		self.request('DELETE', '/collections/'+id)
-
-	def get_devices(self, collection_id):
-		x = self.request('GET', '/collections/{0}/devices'.format(collection_id))
-		return map(lambda d: Device(json=d), x['devices'])
-	def get_device(self, collection_id, device_id):
-		x = self.request('GET', '/collections/{0}/devices/{1}'.format(collection_id, device_id))
-		return Device(json=x)
-	def create_device(self, collection_id, device):
-		x = self.request('POST', '/collections/{0}/devices'.format(collection_id), device)
-		return Device(json=x)
-	def update_device(self, collection_id, device):
-		x = self.request('PATCH', '/collections/{0}/devices/{1}'.format(collection_id, device.id), device)
-		return Device(json=x)
-	def delete_device(self, collection_id, device_id):
-		self.request('DELETE', '/collections/{0}/devices/{1}'.format(collection_id, device_id))
+	async def _output(self, path, handler):
+		url = urlparse(self.addr)
+		scheme = 'wss'
+		ssl = True
+		if url.scheme == 'http':
+			scheme = 'ws'
+			ssl = False
+		hostport = url.hostname
+		if url.port is not None:
+			hostport += ":" + url.port
+		try:
+			async with websockets.connect(
+				'{0}://{1}{2}/from'.format(scheme, hostport, path),
+				ssl=ssl,
+				extra_headers=[('X-API-Token', self.token)],
+				origin='http://www.example.com',
+			) as ws:
+				while True:
+					msg = json.loads(await ws.recv())
+					if 'keepAlive' in msg:
+						continue
+					handler(OutputMessage(json=msg))
+		except websockets.exceptions.ConnectionClosed:
+			pass
+		except asyncio.CancelledError:
+			pass
 
 
 class ClientError(Exception):
@@ -123,7 +161,7 @@ class Team:
 	def __init__(self, id=None, members=None, tags=None, json=None):
 		if json is not None:
 			self.id = json['teamId']
-			self.members = map(lambda m: Member(m), json.get('members', []))
+			self.members = [Member(m) for m in json.get('members', [])]
 			self.tags = json.get('tags', {})
 			return
 		self.id = id
@@ -133,7 +171,7 @@ class Team:
 	def json(self):
 		return {
 			'teamId': self.id,
-			'members': map(lambda m: m.json(), self.members),
+			'members': [m.json() for m in self.members],
 			'tags': self.tags,
 		}
 
@@ -196,3 +234,10 @@ class Device:
 			'imei': self.imei,
 			'tags': self.tags,
 		}
+
+
+class OutputMessage:
+	def __init__(self, json):
+		self.device = Device(json=json['device'])
+		self.payload = base64.b64decode(json['payload'])
+		self.received = json['received']
