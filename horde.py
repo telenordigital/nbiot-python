@@ -97,9 +97,8 @@ class Client:
 			) as ws:
 				while True:
 					msg = json.loads(await ws.recv())
-					if 'keepAlive' in msg:
-						continue
-					handler(OutputMessage(json=msg))
+					if msg['type'] == 'data':
+						handler(OutputMessage(json=msg))
 		except websockets.exceptions.ConnectionClosed:
 			pass
 		except asyncio.CancelledError:
@@ -117,8 +116,8 @@ class ClientError(Exception):
 
 CONFIG_FILE = '.horde'
 DEFAULT_ADDRESS = 'https://api.nbiot.telenor.io'
-ADDRESS_ENV_VAR = 'HORED_ADDRESS'
-TOKEN_ENV_VAR = 'HORED_TOKEN'
+ADDRESS_ENV_VAR = 'HORDE_ADDRESS'
+TOKEN_ENV_VAR = 'HORDE_TOKEN'
 
 def addressTokenFromConfig(filename):
 	address, token = readConfig(getFullPath(filename))
