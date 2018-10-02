@@ -1,7 +1,7 @@
 import asyncio
 import pytest
 
-from horde import *
+from nbiot import *
 
 def test_config():
 	addr, token = addressTokenFromConfig(CONFIG_FILE)

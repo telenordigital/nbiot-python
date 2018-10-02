@@ -10,9 +10,9 @@ import websockets
 class Client:
 	"""Construct a new client.  If addr or teken is not provided, the default
 	configuration is used.  The default configuration can be specified in a
-	configuration file (~/.horde) or through environment variables.  The config
+	configuration file (~/.telenor-nbiot) or through environment variables.  The config
 	file is expected to contain a "address=<value>" line and/or a "token=<value>"
-	line.  The environment variables are HORDE_ADDRESS and HORDE_TOKEN"""
+	line.  The environment variables are TELENOR_NBIOT_ADDRESS and TELENOR_NBIOT_TOKEN"""
 	def __init__(self, addr=None, token=None):
 		if addr is None or token is None:
 			addr, token = addressTokenFromConfig(CONFIG_FILE)
@@ -114,10 +114,10 @@ class ClientError(Exception):
 		return self.message
 
 
-CONFIG_FILE = '.horde'
+CONFIG_FILE = '.telenor-nbiot'
 DEFAULT_ADDRESS = 'https://api.nbiot.telenor.io'
-ADDRESS_ENV_VAR = 'HORDE_ADDRESS'
-TOKEN_ENV_VAR = 'HORDE_TOKEN'
+ADDRESS_ENV_VAR = 'TELENOR_NBIOT_ADDRESS'
+TOKEN_ENV_VAR = 'TELENOR_NBIOT_TOKEN'
 
 def addressTokenFromConfig(filename):
 	address, token = readConfig(getFullPath(filename))
