@@ -73,12 +73,12 @@ class Client:
 		if method is not 'DELETE':
 			return resp.json()
 
-	def collection_output(self, id, handler):
-		return self._output('/collections/'+id, handler)
-	def device_output(self, collection_id, device_id, handler):
-		return self._output('/collections/{0}/devices/{1}'.format(collection_id, device_id), handler)
+	def collection_output(self, id):
+		return self._output('/collections/'+id)
+	def device_output(self, collection_id, device_id):
+		return self._output('/collections/{0}/devices/{1}'.format(collection_id, device_id))
 
-	async def _output(self, path, handler):
+	async def _output(self, path):
 		url = urlparse(self.addr)
 		scheme = 'wss'
 		ssl = True
@@ -88,21 +88,13 @@ class Client:
 		hostport = url.hostname
 		if url.port is not None:
 			hostport += ":" + url.port
-		try:
-			async with websockets.connect(
-				'{0}://{1}{2}/from'.format(scheme, hostport, path),
-				ssl=ssl,
-				extra_headers=[('X-API-Token', self.token)],
-				origin='http://www.example.com',
-			) as ws:
-				while True:
-					msg = json.loads(await ws.recv())
-					if msg['type'] == 'data':
-						handler(OutputMessage(json=msg))
-		except websockets.exceptions.ConnectionClosed:
-			pass
-		except asyncio.CancelledError:
-			pass
+		ws = await websockets.connect(
+			'{0}://{1}{2}/from'.format(scheme, hostport, path),
+			ssl=ssl,
+			extra_headers=[('X-API-Token', self.token)],
+			origin='http://www.example.com',
+		)
+		return OutputStream(ws)
 
 
 class ClientError(Exception):
@@ -233,6 +225,26 @@ class Device:
 			'imei': self.imei,
 			'tags': self.tags,
 		}
+
+
+class OutputStream:
+	def __init__(self, ws):
+		self.ws = ws
+
+	async def recv(self):
+		try:
+			while True:
+				msg = json.loads(await self.ws.recv())
+				if msg['type'] == 'data':
+					return OutputMessage(json=msg)
+		except websockets.exceptions.ConnectionClosed:
+			raise OutputStreamClosed()
+
+	async def close(self):
+		await self.ws.close()
+
+class OutputSreamClosed(Exception):
+	pass
 
 
 class OutputMessage:

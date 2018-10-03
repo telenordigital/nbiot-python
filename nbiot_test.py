@@ -80,9 +80,16 @@ async def test_output():
 	client = Client()
 	collection = client.create_collection(Collection())
 
-	task = asyncio.create_task(client.collection_output(collection.id, lambda msg: print(msg)))
-	await asyncio.sleep(4)
-	task.cancel()
-	await task
+	stream = await client.collection_output(collection.id)
+	deadline = asyncio.create_task(asyncio.sleep(4))
+	while True:
+		msg_task = asyncio.create_task(stream.recv())
+		done, _ = await asyncio.wait({msg_task, deadline}, return_when=asyncio.FIRST_COMPLETED)
+		if deadline in done:
+			break
+		msg = msg_task.result()
+		print(msg.payload)
+
+	await stream.close()
 
 	client.delete_collection(collection.id)
