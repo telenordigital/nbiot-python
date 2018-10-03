@@ -18,6 +18,16 @@ class Client:
 			addr, token = addressTokenFromConfig(CONFIG_FILE)
 		self.addr = addr
 		self.token = token
+		self.ping()
+
+	def ping(self):
+		try:
+			self._request('GET', '/')
+		except ClientError as err:
+			# A token with restricted access will receive 403 Forbidden from "/"
+			# but that still indicates a succesful connection.
+			if err.http_status_code != requests.codes.forbidden:
+				raise err
 
 	def get_teams(self):
 		x = self._request('GET', '/teams')
