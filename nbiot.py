@@ -83,12 +83,12 @@ class Client:
 		if method is not 'DELETE':
 			return resp.json()
 
-	def collection_output(self, id):
-		return self._output('/collections/'+id)
-	def device_output(self, collection_id, device_id):
-		return self._output('/collections/{0}/devices/{1}'.format(collection_id, device_id))
+	def collection_output_stream(self, id):
+		return self._output_stream('/collections/'+id)
+	def device_output_stream(self, collection_id, device_id):
+		return self._output_stream('/collections/{0}/devices/{1}'.format(collection_id, device_id))
 
-	async def _output(self, path):
+	async def _output_stream(self, path):
 		url = urlparse(self.addr)
 		scheme = 'wss'
 		ssl = True
@@ -246,7 +246,7 @@ class OutputStream:
 			while True:
 				msg = json.loads(await self.ws.recv())
 				if msg['type'] == 'data':
-					return OutputMessage(json=msg)
+					return OutputDataMessage(json=msg)
 		except websockets.exceptions.ConnectionClosed:
 			raise OutputStreamClosed()
 
@@ -257,7 +257,7 @@ class OutputSreamClosed(Exception):
 	pass
 
 
-class OutputMessage:
+class OutputDataMessage:
 	def __init__(self, json):
 		self.device = Device(json=json['device'])
 		self.payload = base64.b64decode(json['payload'])

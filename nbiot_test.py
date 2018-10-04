@@ -76,11 +76,11 @@ def test_devices():
 	client.delete_collection(collection.id)
 
 @pytest.mark.asyncio
-async def test_output():
+async def test_output_streamm():
 	client = Client()
 	collection = client.create_collection(Collection())
 
-	stream = await client.collection_output(collection.id)
+	stream = await client.collection_output_stream(collection.id)
 	deadline = asyncio.create_task(asyncio.sleep(4))
 	while True:
 		msg_task = asyncio.create_task(stream.recv())
