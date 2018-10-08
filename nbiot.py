@@ -74,6 +74,21 @@ class Client:
 	def delete_device(self, collection_id, device_id):
 		self._request('DELETE', '/collections/{0}/devices/{1}'.format(collection_id, device_id))
 
+	def get_outputs(self, collection_id):
+		x = self._request('GET', '/collections/{0}/outputs'.format(collection_id))
+		return [_output(o) for o in x['outputs']]
+	def get_output(self, collection_id, output_id):
+		x = self._request('GET', '/collections/{0}/outputs/{1}'.format(collection_id, output_id))
+		return _output(x)
+	def create_output(self, collection_id, output):
+		x = self._request('POST', '/collections/{0}/outputs'.format(collection_id), output)
+		return _output(x)
+	def update_output(self, collection_id, output):
+		x = self._request('PATCH', '/collections/{0}/outputs/{1}'.format(collection_id, output.id), output)
+		return _output(x)
+	def delete_output(self, collection_id, output_id):
+		self._request('DELETE', '/collections/{0}/outputs/{1}'.format(collection_id, output_id))
+
 	def _request(self, method, path, x=None):
 		json = x and x.json()
 		headers = {'X-API-Token': self.token, 'Content-Type': 'application/json'}
@@ -237,6 +252,113 @@ class Device:
 		}
 
 
+def _output(json):
+	return {
+		'webhook': WebHookOutput,
+		'mqtt': MQTTOutput,
+		'ifttt': IFTTTOutput,
+	}[json['type']](json=json)
+
+class WebHookOutput:
+	def __init__(self, id=None, collection_id=None, url=None, basic_auth_user=None, basic_auth_pass=None, custom_header_name=None, custom_header_value=None, json=None):
+		if json is not None:
+			cfg = json['config']
+			self.id = json['outputId']
+			self.collection_id = json['collectionId']
+			self.url = cfg['url']
+			self.basic_auth_user = cfg.get('basicAuthUser')
+			self.basic_auth_pass = cfg.get('basicAuthPass')
+			self.custom_header_name = cfg.get('customHeaderName')
+			self.custom_header_value = cfg.get('customHeaderValue')
+			return
+		self.id = id
+		self.collection_id = collection_id
+		self.url = url
+		self.basic_auth_user = basic_auth_user
+		self.basic_auth_pass = basic_auth_pass
+		self.custom_header_name = custom_header_name
+		self.custom_header_value = custom_header_value
+
+	def json(self):
+		return {
+			'outputId': self.id,
+			'collectionId': self.collection_id,
+			'type': 'webhook',
+			'config': {
+				'url': self.url,
+				'basicAuthUser': self.basic_auth_user,
+				'basicAuthPass': self.basic_auth_pass,
+				'customHeaderName': self.custom_header_name,
+				'customHeaderValue': self.custom_header_value,
+			},
+		}
+
+class MQTTOutput:
+	def __init__(self, id=None, collection_id=None, endpoint=None, disable_cert_check=None, username=None, password=None, client_id=None, topic_name=None, json=None):
+		if json is not None:
+			cfg = json['config']
+			self.id = json['outputId']
+			self.collection_id = json['collectionId']
+			self.endpoint = cfg['endpoint']
+			self.disable_cert_check = cfg.get('disableCertCheck')
+			self.username = cfg.get('username')
+			self.password = cfg.get('password')
+			self.client_id = cfg['clientId']
+			self.topic_name = cfg['topicName']
+			return
+		self.id = id
+		self.collection_id = collection_id
+		self.endpoint = endpoint
+		self.disable_cert_check = disable_cert_check
+		self.username = username
+		self.password = password
+		self.client_id = client_id
+		self.topic_name = topic_name
+
+	def json(self):
+		return {
+			'outputId': self.id,
+			'collectionId': self.collection_id,
+			'type': 'mqtt',
+			'config': {
+				'endpoint': self.endpoint,
+				'disableCertCheck': self.disable_cert_check,
+				'username': self.username,
+				'password': self.password,
+				'clientId': self.client_id,
+				'topicName': self.topic_name,
+			},
+		}
+
+class IFTTTOutput:
+	def __init__(self, id=None, collection_id=None, key=None, event_name=None, as_is_payload=None, json=None):
+		if json is not None:
+			cfg = json['config']
+			self.id = json['outputId']
+			self.collection_id = json['collectionId']
+			self.key = cfg['key']
+			self.event_name = cfg['eventName']
+			self.as_is_payload = cfg.get('asIsPayload', False)
+			return
+		self.id = id
+		self.collection_id = collection_id
+		self.key = key
+		self.event_name = event_name
+		self.as_is_payload = as_is_payload
+
+	def json(self):
+		return {
+			'outputId': self.id,
+			'collectionId': self.collection_id,
+			'type': 'ifttt',
+			'config': {
+				'key': self.key,
+				'eventName': self.event_name,
+				'asIsPayload': self.as_is_payload,
+			},
+		}
+
+
 class OutputStream:
 	def __init__(self, ws):
 		self.ws = ws
@@ -253,7 +375,7 @@ class OutputStream:
 	async def close(self):
 		await self.ws.close()
 
-class OutputSreamClosed(Exception):
+class OutputStreamClosed(Exception):
 	pass
 
 
