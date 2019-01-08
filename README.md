@@ -27,6 +27,17 @@ accepts the address and token directly.
 
 Development is done using [Pipenv](https://docs.pipenv.org/).  Run `pipenv install --dev` to install all dependencies.
 
+Because Python has not properly solved dependency management yet, dependencies must be be repeated in [setup.py](setup.py) under the `install_requires` entry.
+
 ## Testing
 
 Tests are written using [pytest](https://pytest.org/).  Run `pipenv run pytest` to run all the tests.
+
+## Deployment
+
+To build and upload a new version to PyPI, make sure that you are using Python 3 and run
+
+```bash
+python setup.py bdist_wheel
+twine upload dist/*          # `pip install twine` to get this tool
+```
