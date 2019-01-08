@@ -8,7 +8,7 @@ pytest = "*"
 pytest-asyncio = "*"
 
 [packages]
-requests = "*"
+requests = ">=2.20.0"
 websockets = "*"
 
 [requires]
