@@ -23,6 +23,21 @@ variables `TELENOR_NBIOT_ADDRESS` and `TELENOR_NBIOT_TOKEN`. If you only use env
 the configuration file can be ignored.  Finally, there is a Client constructor that
 accepts the address and token directly.
 
+# Sample code
+
+```python
+from nbiot import nbiot
+
+client = nbiot.Client()
+stream = await client.collection_output_stream('<YOUR_COLLECTION_ID>')
+while True:
+	try:
+		msg = await stream.recv()
+	except nbiot.OutputStreamClosed:
+		break
+	print(msg.payload)
+```
+
 # Development
 
 Development is done using [Pipenv](https://docs.pipenv.org/).  Run `pipenv install --dev` to install all dependencies.
@@ -38,6 +53,7 @@ Tests are written using [pytest](https://pytest.org/).  Run `pipenv run pytest` 
 To build and upload a new version to PyPI, make sure that you are using Python 3 and run
 
 ```bash
+python setup.py sdist
 python setup.py bdist_wheel
 twine upload dist/*          # `pip install twine` to get this tool
 ```
