@@ -1,5 +1,6 @@
 import asyncio
 import base64
+from datetime import datetime
 import json
 import os
 
@@ -383,4 +384,4 @@ class OutputDataMessage:
 	def __init__(self, json):
 		self.device = Device(json=json['device'])
 		self.payload = base64.b64decode(json['payload'])
-		self.received = json['received']
+		self.received = datetime.utcfromtimestamp(json['received']/1000)
