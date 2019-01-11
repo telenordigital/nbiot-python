@@ -4,7 +4,10 @@ python:
 os:
   - linux
   - osx
+dist: xenial
+osx_image: xcode8.3
+sudo: yes
 install:
-  - pip install -dev
+  - pip install --dev
 script:
   - pytest
