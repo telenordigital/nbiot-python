@@ -1,4 +1,6 @@
 # nbiot-python
+[![Travis-CI](https://api.travis-ci.com/telenordigital/nbiot-python.svg)](https://travis-ci.com/telenordigital/nbiot-python)
+
 NBIoT-Python provides a Python client for the REST API for Telenor NB-IoT.
 
 ## Configuration
