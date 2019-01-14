@@ -153,8 +153,11 @@ def readConfig(filepath):
 	address = DEFAULT_ADDRESS
 	token = ''
 
-	with open(filepath) as f:
-		lines = f.readlines()
+	try:
+		with open(filepath) as f:
+			lines = f.readlines()
+	except FileNotFoundError:
+		return address, token
 	lines = [line.strip() for line in lines]
 	lineno = 0
 	for line in lines:
