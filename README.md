@@ -40,7 +40,7 @@ while True:
 
 # Development
 
-Development is done using [Pipenv](https://docs.pipenv.org/).  Run `pipenv install --dev` to install all dependencies.
+Development is done using [Pipenv](https://docs.pipenv.org/).  Run `pipenv sync --dev` to install all dependencies.
 
 Because Python has not properly solved dependency management yet, dependencies must be be repeated in [setup.py](setup.py) under the `install_requires` entry.
 

@@ -1,20 +1,20 @@
 import asyncio
 import pytest
 
-from nbiot import *
+from nbiot import nbiot
 
 def test_config():
-	addr, token = addressTokenFromConfig(CONFIG_FILE)
+	addr, token = nbiot.addressTokenFromConfig(nbiot.CONFIG_FILE)
 	assert type(addr) is str
 	assert type(token) is str
 
 def test_client():
-	Client()
+	nbiot.Client()
 
 def test_teams():
-	client = Client()
+	client = nbiot.Client()
 
-	team = client.create_team(Team())
+	team = client.create_team(nbiot.Team())
 	try:
 		teams = client.get_teams()
 		assert contains(teams, team)
@@ -30,9 +30,9 @@ def test_teams():
 		assert not contains(teams, team)
 
 def test_collections():
-	client = Client()
+	client = nbiot.Client()
 
-	collection = client.create_collection(Collection())
+	collection = client.create_collection(nbiot.Collection())
 	try:
 		collections = client.get_collections()
 		assert contains(collections, collection)
@@ -48,14 +48,14 @@ def test_collections():
 		assert not contains(collections, collection)
 
 def test_devices():
-	client = Client()
-	collection = client.create_collection(Collection())
+	client = nbiot.Client()
+	collection = client.create_collection(nbiot.Collection())
 
 	try:
 		devices = client.get_devices(collection.id)
 		assert len(devices) == 0
 
-		device = client.create_device(collection.id, Device(imsi='12', imei='34'))
+		device = client.create_device(collection.id, nbiot.Device(imsi='12', imei='34'))
 		try:
 			devices = client.get_devices(collection.id)
 			assert len(devices) == 1
@@ -73,11 +73,11 @@ def test_devices():
 		client.delete_collection(collection.id)
 
 def test_outputs():
-	client = Client()
-	collection = client.create_collection(Collection())
+	client = nbiot.Client()
+	collection = client.create_collection(nbiot.Collection())
 
 	try:
-		output = client.create_output(collection.id, IFTTTOutput(key='abc', event_name='def'))
+		output = client.create_output(collection.id, nbiot.IFTTTOutput(key='abc', event_name='def'))
 		try:
 			outputs = client.get_outputs(collection.id)
 			assert contains(outputs, output)
@@ -95,8 +95,8 @@ def test_outputs():
 
 @pytest.mark.asyncio
 async def test_output_stream():
-	client = Client()
-	collection = client.create_collection(Collection())
+	client = nbiot.Client()
+	collection = client.create_collection(nbiot.Collection())
 	try:
 		stream = await client.collection_output_stream(collection.id)
 		deadline = asyncio.create_task(asyncio.sleep(4))
