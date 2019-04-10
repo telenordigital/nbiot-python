@@ -1,4 +1,5 @@
 import asyncio
+import requests
 import pytest
 
 from nbiot import nbiot
@@ -24,6 +25,17 @@ def test_teams():
 		team.tags[key] = value
 		team = client.update_team(team)
 		assert team.tags[key] == value
+
+		assert len(client.invites(team.id)) == 0
+		iv = client.create_invite(team.id)
+		try:
+			ivs = client.invites(team.id)
+			assert len(ivs) == 1 and ivs[0].json() == iv.json()
+			with pytest.raises(nbiot.ClientError) as err:
+				client.accept_invite(iv.code)
+			assert err.value.http_status_code == requests.codes.conflict
+		finally:
+			client.delete_invite(team.id, iv.code)
 	finally:
 		client.delete_team(team.id)
 		teams = client.teams()

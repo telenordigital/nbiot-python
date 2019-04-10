@@ -42,10 +42,32 @@ class Client:
 	def update_team(self, team):
 		x = self._request('PATCH', '/teams/'+team.id, team)
 		return Team(json=x)
+	def update_team_member_role(self, team_id, user_id, role):
+		x = self._request('PATCH', '/teams/{0}/members/{1}'.format(team_id, user_id), Member(role=role))
+		return Member(json=x)
+	def delete_team_member(self, team_id, user_id):
+		self._request('DELETE', '/teams/{0}/members/{1}'.format(team_id, user_id))
 	def delete_team_tag(self, id, name):
 		self._request('DELETE', '/teams/{0}/tags/{1}'.format(id, name))
 	def delete_team(self, id):
 		self._request('DELETE', '/teams/'+id)
+
+
+	def invites(self, team_id):
+		x = self._request('GET', '/teams/{0}/invites'.format(team_id))
+		return [Invite(json=i) for i in x['invites']]
+	def invite(self, team_id, code):
+		x = self._request('GET', '/teams/{0}/invites/{1}'.format(team_id, code))
+		return Invite(json=x)
+	def create_invite(self, team_id):
+		x = self._request('POST', '/teams/{0}/invites'.format(team_id))
+		return Invite(json=x)
+	def accept_invite(self, code):
+		x = self._request('POST', '/teams/accept', Invite(code=code))
+		return Team(json=x)
+	def delete_invite(self, team_id, code):
+		self._request('DELETE', '/teams/{0}/invites/{1}'.format(team_id, code))
+
 
 	def collections(self):
 		x = self._request('GET', '/collections')
@@ -205,18 +227,77 @@ class Team:
 
 
 class Member:
-	def __init__(self, user_id=None, role=None, json=None):
+	def __init__(
+		self,
+		user_id=None,
+		role=None,
+		name=None,
+		email=None,
+		phone=None,
+		verifiedEmail=None,
+		verifiedPhone=None,
+		connectId=None,
+		gitHubLogin=None,
+		authType=None,
+		avatarUrl=None,
+		json=None,
+	):
 		if json is not None:
 			self.user_id = json['userId']
 			self.role = json['role']
+			self.name = json['name']
+			self.email = json['email']
+			self.phone = json['phone']
+			self.verifiedEmail = json['verifiedEmail']
+			self.verifiedPhone = json['verifiedPhone']
+			self.connectId = json['connectId']
+			self.gitHubLogin = json['gitHubLogin']
+			self.authType = json['authType']
+			self.avatarUrl = json['avatarUrl']
 			return
 		self.user_id = user_id
 		self.role = role
+		self.name = name
+		self.email = email
+		self.phone = phone
+		self.verifiedEmail = verifiedEmail
+		self.verifiedPhone = verifiedPhone
+		self.connectId = connectId
+		self.gitHubLogin = gitHubLogin
+		self.authType = authType
+		self.avatarUrl = avatarUrl
 
 	def json(self):
 		return {
 			'user_id': self.user_id,
 			'role': self.role,
+			'user_id': self.user_id,
+			'role': self.role,
+			'name': self.name,
+			'email': self.email,
+			'phone': self.phone,
+			'verifiedEmail': self.verifiedEmail,
+			'verifiedPhone': self.verifiedPhone,
+			'connectId': self.connectId,
+			'gitHubLogin': self.gitHubLogin,
+			'authType': self.authType,
+			'avatarUrl': self.avatarUrl,
+		}
+
+
+class Invite:
+	def __init__(self, code=None, created_at=None, json=None):
+		if json is not None:
+			self.code = json['code']
+			self.created_at = json['createdAt']
+			return
+		self.code = code
+		self.created_at = created_at
+
+	def json(self):
+		return {
+			'code': self.code,
+			'createdAt': self.created_at,
 		}
 
 
