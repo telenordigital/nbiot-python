@@ -25,6 +25,10 @@ variables `TELENOR_NBIOT_ADDRESS` and `TELENOR_NBIOT_TOKEN`. If you only use env
 the configuration file can be ignored.  Finally, there is a Client constructor that
 accepts the address and token directly.
 
+## Updating resources
+
+The various `Client.update*` methods work via HTTP PATCH, which means they will only modify or set fields, not delete them.  There are special `Client.delete*tag` methods for deleting tags.
+
 # Sample code
 
 ```python

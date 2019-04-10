@@ -42,6 +42,8 @@ class Client:
 	def update_team(self, team):
 		x = self._request('PATCH', '/teams/'+team.id, team)
 		return Team(json=x)
+	def delete_team_tag(self, id, name):
+		self._request('DELETE', '/teams/{0}/tags/{1}'.format(id, name))
 	def delete_team(self, id):
 		self._request('DELETE', '/teams/'+id)
 
@@ -57,6 +59,8 @@ class Client:
 	def update_collection(self, collection):
 		x = self._request('PATCH', '/collections/'+collection.id, collection)
 		return Collection(json=x)
+	def delete_collection_tag(self, id, name):
+		self._request('DELETE', '/collections/{0}/tags/{1}'.format(id, name))
 	def delete_collection(self, id):
 		self._request('DELETE', '/collections/'+id)
 
@@ -72,6 +76,8 @@ class Client:
 	def update_device(self, collection_id, device):
 		x = self._request('PATCH', '/collections/{0}/devices/{1}'.format(collection_id, device.id), device)
 		return Device(json=x)
+	def delete_device_tag(self, collection_id, device_id, name):
+		self._request('DELETE', '/collections/{0}/devices/{1}/tags/{2}'.format(collection_id, device_id, name))
 	def delete_device(self, collection_id, device_id):
 		self._request('DELETE', '/collections/{0}/devices/{1}'.format(collection_id, device_id))
 
@@ -87,6 +93,8 @@ class Client:
 	def update_output(self, collection_id, output):
 		x = self._request('PATCH', '/collections/{0}/outputs/{1}'.format(collection_id, output.id), output)
 		return _output(x)
+	def delete_output_tag(self, collection_id, output_id, name):
+		self._request('DELETE', '/collections/{0}/outputs/{1}/tags/{2}'.format(collection_id, output_id, name))
 	def delete_output(self, collection_id, output_id):
 		self._request('DELETE', '/collections/{0}/outputs/{1}'.format(collection_id, output_id))
 
