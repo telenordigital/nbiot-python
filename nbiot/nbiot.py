@@ -30,10 +30,10 @@ class Client:
 			if err.http_status_code != requests.codes.forbidden:
 				raise err
 
-	def get_teams(self):
+	def teams(self):
 		x = self._request('GET', '/teams')
 		return [Team(json=t) for t in x['teams']]
-	def get_team(self, id):
+	def team(self, id):
 		x = self._request('GET', '/teams/'+id)
 		return Team(json=x)
 	def create_team(self, team):
@@ -45,10 +45,10 @@ class Client:
 	def delete_team(self, id):
 		self._request('DELETE', '/teams/'+id)
 
-	def get_collections(self):
+	def collections(self):
 		x = self._request('GET', '/collections')
 		return [Collection(json=c) for c in x['collections']]
-	def get_collection(self, id):
+	def collection(self, id):
 		x = self._request('GET', '/collections/'+id)
 		return Collection(json=x)
 	def create_collection(self, collection):
@@ -60,10 +60,10 @@ class Client:
 	def delete_collection(self, id):
 		self._request('DELETE', '/collections/'+id)
 
-	def get_devices(self, collection_id):
+	def devices(self, collection_id):
 		x = self._request('GET', '/collections/{0}/devices'.format(collection_id))
 		return [Device(json=d) for d in x['devices']]
-	def get_device(self, collection_id, device_id):
+	def device(self, collection_id, device_id):
 		x = self._request('GET', '/collections/{0}/devices/{1}'.format(collection_id, device_id))
 		return Device(json=x)
 	def create_device(self, collection_id, device):
@@ -75,10 +75,10 @@ class Client:
 	def delete_device(self, collection_id, device_id):
 		self._request('DELETE', '/collections/{0}/devices/{1}'.format(collection_id, device_id))
 
-	def get_outputs(self, collection_id):
+	def outputs(self, collection_id):
 		x = self._request('GET', '/collections/{0}/outputs'.format(collection_id))
 		return [_output(o) for o in x['outputs']]
-	def get_output(self, collection_id, output_id):
+	def output(self, collection_id, output_id):
 		x = self._request('GET', '/collections/{0}/outputs/{1}'.format(collection_id, output_id))
 		return _output(x)
 	def create_output(self, collection_id, output):

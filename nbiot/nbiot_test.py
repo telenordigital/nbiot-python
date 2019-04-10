@@ -16,7 +16,7 @@ def test_teams():
 
 	team = client.create_team(nbiot.Team())
 	try:
-		teams = client.get_teams()
+		teams = client.teams()
 		assert contains(teams, team)
 
 		key = 'test_key'
@@ -26,7 +26,7 @@ def test_teams():
 		assert team.tags[key] == value
 	finally:
 		client.delete_team(team.id)
-		teams = client.get_teams()
+		teams = client.teams()
 		assert not contains(teams, team)
 
 def test_collections():
@@ -34,7 +34,7 @@ def test_collections():
 
 	collection = client.create_collection(nbiot.Collection())
 	try:
-		collections = client.get_collections()
+		collections = client.collections()
 		assert contains(collections, collection)
 
 		key = 'test_key'
@@ -44,7 +44,7 @@ def test_collections():
 		assert collection.tags[key] == value
 	finally:
 		client.delete_collection(collection.id)
-		collections = client.get_collections()
+		collections = client.collections()
 		assert not contains(collections, collection)
 
 def test_devices():
@@ -52,12 +52,12 @@ def test_devices():
 	collection = client.create_collection(nbiot.Collection())
 
 	try:
-		devices = client.get_devices(collection.id)
+		devices = client.devices(collection.id)
 		assert len(devices) == 0
 
 		device = client.create_device(collection.id, nbiot.Device(imsi='12', imei='34'))
 		try:
-			devices = client.get_devices(collection.id)
+			devices = client.devices(collection.id)
 			assert len(devices) == 1
 
 			key = 'test_key'
@@ -67,7 +67,7 @@ def test_devices():
 			assert device.tags[key] == value
 		finally:
 			client.delete_device(collection.id, device.id)
-			devices = client.get_devices(collection.id)
+			devices = client.devices(collection.id)
 			assert len(devices) == 0
 	finally:
 		client.delete_collection(collection.id)
@@ -79,7 +79,7 @@ def test_outputs():
 	try:
 		output = client.create_output(collection.id, nbiot.IFTTTOutput(key='abc', event_name='def'))
 		try:
-			outputs = client.get_outputs(collection.id)
+			outputs = client.outputs(collection.id)
 			assert contains(outputs, output)
 
 			value = 'ghi'
@@ -88,7 +88,7 @@ def test_outputs():
 			assert output.key == value
 		finally:
 			client.delete_output(collection.id, output.id)
-			outputs = client.get_outputs(collection.id)
+			outputs = client.outputs(collection.id)
 			assert not contains(outputs, output)
 	finally:
 		client.delete_collection(collection.id)
