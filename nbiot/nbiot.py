@@ -364,7 +364,7 @@ def _output(json):
 	}[json['type']](json=json)
 
 class WebHookOutput:
-	def __init__(self, id=None, collection_id=None, url=None, basic_auth_user=None, basic_auth_pass=None, custom_header_name=None, custom_header_value=None, json=None):
+	def __init__(self, id=None, collection_id=None, url=None, basic_auth_user=None, basic_auth_pass=None, custom_header_name=None, custom_header_value=None, enabled=None, tags=None, json=None):
 		if json is not None:
 			cfg = json['config']
 			self.id = json['outputId']
@@ -374,6 +374,8 @@ class WebHookOutput:
 			self.basic_auth_pass = cfg.get('basicAuthPass')
 			self.custom_header_name = cfg.get('customHeaderName')
 			self.custom_header_value = cfg.get('customHeaderValue')
+			self.enabled = json['enabled']
+			self.tags = json.get('tags', {})
 			return
 		self.id = id
 		self.collection_id = collection_id
@@ -382,6 +384,8 @@ class WebHookOutput:
 		self.basic_auth_pass = basic_auth_pass
 		self.custom_header_name = custom_header_name
 		self.custom_header_value = custom_header_value
+		self.enabled = enabled
+		self.tags = tags or {}
 
 	def json(self):
 		return {
@@ -395,10 +399,12 @@ class WebHookOutput:
 				'customHeaderName': self.custom_header_name,
 				'customHeaderValue': self.custom_header_value,
 			},
+			'enabled': self.enabled,
+			'tags': self.tags,
 		}
 
 class MQTTOutput:
-	def __init__(self, id=None, collection_id=None, endpoint=None, disable_cert_check=None, username=None, password=None, client_id=None, topic_name=None, json=None):
+	def __init__(self, id=None, collection_id=None, endpoint=None, disable_cert_check=None, username=None, password=None, client_id=None, topic_name=None, enabled=None, tags=None, json=None):
 		if json is not None:
 			cfg = json['config']
 			self.id = json['outputId']
@@ -409,6 +415,8 @@ class MQTTOutput:
 			self.password = cfg.get('password')
 			self.client_id = cfg['clientId']
 			self.topic_name = cfg['topicName']
+			self.enabled = json['enabled']
+			self.tags = json.get('tags', {})
 			return
 		self.id = id
 		self.collection_id = collection_id
@@ -418,6 +426,8 @@ class MQTTOutput:
 		self.password = password
 		self.client_id = client_id
 		self.topic_name = topic_name
+		self.enabled = enabled
+		self.tags = tags or {}
 
 	def json(self):
 		return {
@@ -432,10 +442,12 @@ class MQTTOutput:
 				'clientId': self.client_id,
 				'topicName': self.topic_name,
 			},
+			'enabled': self.enabled,
+			'tags': self.tags,
 		}
 
 class IFTTTOutput:
-	def __init__(self, id=None, collection_id=None, key=None, event_name=None, as_is_payload=None, json=None):
+	def __init__(self, id=None, collection_id=None, key=None, event_name=None, as_is_payload=None, enabled=None, tags=None, json=None):
 		if json is not None:
 			cfg = json['config']
 			self.id = json['outputId']
@@ -443,12 +455,16 @@ class IFTTTOutput:
 			self.key = cfg['key']
 			self.event_name = cfg['eventName']
 			self.as_is_payload = cfg.get('asIsPayload', False)
+			self.enabled = json['enabled']
+			self.tags = json.get('tags', {})
 			return
 		self.id = id
 		self.collection_id = collection_id
 		self.key = key
 		self.event_name = event_name
 		self.as_is_payload = as_is_payload
+		self.enabled = enabled
+		self.tags = tags or {}
 
 	def json(self):
 		return {
@@ -460,21 +476,27 @@ class IFTTTOutput:
 				'eventName': self.event_name,
 				'asIsPayload': self.as_is_payload,
 			},
+			'enabled': self.enabled,
+			'tags': self.tags,
 		}
 
 class UDPOutput:
-	def __init__(self, id=None, collection_id=None, host=None, port=None, json=None):
+	def __init__(self, id=None, collection_id=None, host=None, port=None, enabled=None, tags=None, json=None):
 		if json is not None:
 			cfg = json['config']
 			self.id = json['outputId']
 			self.collection_id = json['collectionId']
 			self.host = cfg['host']
 			self.port = cfg['port']
+			self.enabled = json['enabled']
+			self.tags = json.get('tags', {})
 			return
 		self.id = id
 		self.collection_id = collection_id
 		self.host = host
 		self.port = port
+		self.enabled = enabled
+		self.tags = tags or {}
 
 	def json(self):
 		return {
@@ -485,6 +507,8 @@ class UDPOutput:
 				'host': self.host,
 				'port': self.port,
 			},
+			'enabled': self.enabled,
+			'tags': self.tags,
 		}
 
 
