@@ -30,6 +30,10 @@ class Client:
 			if err.http_status_code != requests.codes.forbidden:
 				raise err
 
+	def system_defaults(self):
+		x = self._request('GET', '/system')
+		return SystemDefaults(x)
+
 	def teams(self):
 		x = self._request('GET', '/teams')
 		return [Team(json=t) for t in x['teams']]
@@ -229,6 +233,32 @@ def readConfig(filepath):
 	return address, token
 
 
+class SystemDefaults:
+	def __init__(self, json):
+		self.default_field_mask = FieldMask(json['defaultFieldMask'])
+		self.forced_field_mask = FieldMask(json['forcedFieldMask'])
+
+class FieldMask:
+	def __init__(self, imsi=None, imei=None, location=None, msisdn=None, json=None):
+		if json is not None:
+			self.imsi = json['imsi']
+			self.imei = json['imei']
+			self.location = json['location']
+			self.msisdn = json['msisdn']
+			return
+		self.imsi = imsi
+		self.imei = imei
+		self.location = location
+		self.msisdn = msisdn
+
+	def json(self):
+		return {
+			'imsi': self.imsi,
+			'imei': self.imei,
+			'location': self.location,
+			'msisdn': self.msisdn,
+		}
+
 class Team:
 	def __init__(self, id=None, members=None, tags=None, json=None):
 		if json is not None:
@@ -324,20 +354,23 @@ class Invite:
 
 
 class Collection:
-	def __init__(self, id=None, team_id=None, tags=None, json=None):
+	def __init__(self, id=None, team_id=None, field_mask=None, tags=None, json=None):
 		if json is not None:
 			self.id = json['collectionId']
 			self.team_id = json['teamId']
+			self.field_mask = json['fieldMask']
 			self.tags = json.get('tags', {})
 			return
 		self.id = id
 		self.team_id = team_id
+		self.field_mask = field_mask
 		self.tags = tags or {}
 
 	def json(self):
 		return {
 			'collectionId': self.id,
 			'teamId': self.team_id,
+			'fieldMask': self.field_mask,
 			'tags': self.tags,
 		}
 

@@ -14,6 +14,9 @@ def test_config():
 def test_client():
 	nbiot.Client()
 
+def test_system_defaults():
+	nbiot.Client().system_defaults()
+
 def test_teams():
 	client = nbiot.Client()
 
