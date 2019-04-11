@@ -130,6 +130,12 @@ class Client:
 		x = self._request('GET', '{0}/data?since={1}&until={2}&limit={3}'.format(path, since, until, limit))
 		return [OutputDataMessage(m) for m in x['messages']]
 
+	def send(self, collection_id, device_id, msg):
+		self._request('POST', '/collections/{0}/devices/{1}/to'.format(collection_id, device_id), msg)
+	def broadcast(self, collection_id, msg):
+		x = self._request('POST', '/collections/{0}/to'.format(collection_id), msg)
+		return BroadcastResult(x)
+
 	def _request(self, method, path, x=None):
 		json = x and x.json()
 		headers = {'X-API-Token': self.token, 'Content-Type': 'application/json'}
@@ -537,3 +543,27 @@ class OutputDataMessage:
 		self.device = Device(json=json['device'])
 		self.payload = base64.b64decode(json['payload'])
 		self.received = datetime.utcfromtimestamp(json['received']/1000)
+
+class DownstreamMessage:
+	def __init__(self, port, payload):
+		if not isinstance(payload, bytes):
+			raise TypeError('payload must be bytes')
+		self.port = port
+		self.payload = payload
+
+	def json(self):
+		return {
+			'port': self.port,
+			'payload': base64.b64encode(self.payload).decode('ascii'),
+		}
+
+class BroadcastResult:
+	def __init__(self, json):
+		self.sent = json['sent']
+		self.failed = json['failed']
+		self.errors = [BroadcastError(e) for e in json['errors']]
+
+class BroadcastError:
+	def __init__(self, json):
+		self.device_id = json['deviceId']
+		self.message = json['message']

@@ -1,5 +1,7 @@
 import asyncio
+import random
 import requests
+import os
 import pytest
 
 from nbiot import nbiot
@@ -127,6 +129,26 @@ async def test_output_stream():
 		await stream.close()
 	finally:
 		client.delete_collection(collection.id)
+
+@pytest.mark.skipif(os.environ.get('CI') != 'true', reason='downstream tests are slow')
+def test_downstream():
+	client = nbiot.Client()
+
+	collection = client.create_collection(nbiot.Collection())
+	devices = [client.create_device(collection.id, nbiot.Device(imsi=randid(), imei=randid())) for i in range(5)]
+	try:
+		with pytest.raises(nbiot.ClientError) as err:
+			client.send(collection.id, devices[0].id, nbiot.DownstreamMessage(1234, b'Hello, device!'))
+		assert err.value.http_status_code == requests.codes.conflict
+
+		res = client.broadcast(collection.id, nbiot.DownstreamMessage(1234, b'Hello, devices!'))
+		assert res.failed == len(devices)
+	finally:
+		[client.delete_device(collection.id, d.id) for d in devices]
+		client.delete_collection(collection.id)
+
+def randid():
+	return str(random.randrange(1e15))
 
 def contains(X, x):
 	return any([y.id == x.id for y in X])
