@@ -360,6 +360,7 @@ def _output(json):
 		'webhook': WebHookOutput,
 		'mqtt': MQTTOutput,
 		'ifttt': IFTTTOutput,
+		'udp': UDPOutput,
 	}[json['type']](json=json)
 
 class WebHookOutput:
@@ -458,6 +459,31 @@ class IFTTTOutput:
 				'key': self.key,
 				'eventName': self.event_name,
 				'asIsPayload': self.as_is_payload,
+			},
+		}
+
+class UDPOutput:
+	def __init__(self, id=None, collection_id=None, host=None, port=None, json=None):
+		if json is not None:
+			cfg = json['config']
+			self.id = json['outputId']
+			self.collection_id = json['collectionId']
+			self.host = cfg['host']
+			self.port = cfg['port']
+			return
+		self.id = id
+		self.collection_id = collection_id
+		self.host = host
+		self.port = port
+
+	def json(self):
+		return {
+			'outputId': self.id,
+			'collectionId': self.collection_id,
+			'type': 'ifttt',
+			'config': {
+				'host': self.host,
+				'port': self.port,
 			},
 		}
 
