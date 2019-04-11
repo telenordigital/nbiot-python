@@ -95,15 +95,15 @@ def test_outputs():
 	collection = client.create_collection(nbiot.Collection())
 
 	try:
-		output = client.create_output(collection.id, nbiot.IFTTTOutput(key='abc', event_name='def'))
+		output = client.create_output(collection.id, nbiot.WebHookOutput(url=nbiot.DEFAULT_ADDRESS))
 		try:
 			outputs = client.outputs(collection.id)
 			assert contains(outputs, output)
 
-			value = 'ghi'
-			output.key = value
-			output = client.update_output(collection.id, output)
-			assert output.key == value
+			client.update_output(collection.id, output)
+
+			assert len(client.output_logs(collection.id, output.id)) == 0
+			client.output_status(collection.id, output.id)
 		finally:
 			client.delete_output(collection.id, output.id)
 			outputs = client.outputs(collection.id)

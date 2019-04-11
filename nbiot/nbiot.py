@@ -115,6 +115,12 @@ class Client:
 	def update_output(self, collection_id, output):
 		x = self._request('PATCH', '/collections/{0}/outputs/{1}'.format(collection_id, output.id), output)
 		return _output(x)
+	def output_logs(self, collection_id, output_id):
+		x = self._request('GET', '/collections/{0}/outputs/{1}/logs'.format(collection_id, output_id))
+		return [OutputLogEntry(l) for l in x['logs']]
+	def output_status(self, collection_id, output_id):
+		x = self._request('GET', '/collections/{0}/outputs/{1}/status'.format(collection_id, output_id))
+		return OutputStatus(x)
 	def delete_output_tag(self, collection_id, output_id, name):
 		self._request('DELETE', '/collections/{0}/outputs/{1}/tags/{2}'.format(collection_id, output_id, name))
 	def delete_output(self, collection_id, output_id):
@@ -516,6 +522,19 @@ class UDPOutput:
 			'enabled': self.enabled,
 			'tags': self.tags,
 		}
+
+class OutputLogEntry:
+	def __init__(self, json):
+		self.message = json['message']
+		self.timestamp = datetime.utcfromtimestamp(json['timestamp']/1000)
+		self.repeated = json['repeated']
+
+class OutputStatus:
+	def __init__(self, json):
+		self.error_count = json['errorCount']
+		self.forwarded = json['forwarded']
+		self.received = json['received']
+		self.retries = json['retries']
 
 
 class OutputStream:
