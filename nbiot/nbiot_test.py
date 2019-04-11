@@ -54,6 +54,8 @@ def test_collections():
 		collection.tags[key] = value
 		collection = client.update_collection(collection)
 		assert collection.tags[key] == value
+
+		assert len(client.collection_data(collection.id)) == 0
 	finally:
 		client.delete_collection(collection.id)
 		collections = client.collections()
@@ -77,6 +79,8 @@ def test_devices():
 			device.tags[key] = value
 			device = client.update_device(collection.id, device)
 			assert device.tags[key] == value
+
+			assert len(client.device_data(collection.id, device.id)) == 0
 		finally:
 			client.delete_device(collection.id, device.id)
 			devices = client.devices(collection.id)

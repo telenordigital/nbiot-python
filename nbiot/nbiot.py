@@ -120,6 +120,16 @@ class Client:
 	def delete_output(self, collection_id, output_id):
 		self._request('DELETE', '/collections/{0}/outputs/{1}'.format(collection_id, output_id))
 
+	def collection_data(self, collection_id, since=None, until=None, limit=0):
+		return self._data('/collections/{0}'.format(collection_id))
+	def device_data(self, collection_id, device_id, since=None, until=None, limit=0):
+		return self._data('/collections/{0}/devices/{1}'.format(collection_id, device_id))
+	def _data(self, path, since=None, until=None, limit=0):
+		since = 0 if since is None else int(since.timestamp() * 1000)
+		until = 0 if until is None else int(until.timestamp() * 1000)
+		x = self._request('GET', '{0}/data?since={1}&until={2}&limit={3}'.format(path, since, until, limit))
+		return [OutputDataMessage(m) for m in x['messages']]
+
 	def _request(self, method, path, x=None):
 		json = x and x.json()
 		headers = {'X-API-Token': self.token, 'Content-Type': 'application/json'}
