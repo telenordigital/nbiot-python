@@ -152,7 +152,7 @@ class Client:
 		resp = requests.request(method, self.addr + path, json=json, headers=headers)
 		if not resp.ok:
 			raise ClientError(resp)
-		if method is not 'DELETE':
+		if method is not 'DELETE' and resp.content:
 			return resp.json()
 
 	def collection_output_stream(self, id):
